@@ -1,16 +1,15 @@
-using System.Diagnostics;
+using System.Text;
 
 namespace Breadmaker;
 
-[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public record SourdoughRecipe
 {
-    public decimal StarterMass { get; }
-    public decimal StarterHydration { get; }
-    public decimal FinalHydration { get; }
-    public decimal FinalMass { get; }
+    public double StarterMass { get; }
+    public double StarterHydration { get; }
+    public double FinalHydration { get; }
+    public double FinalMass { get; }
 
-    public SourdoughRecipe(decimal starterMass, decimal starterHydration, decimal finalHydration, decimal finalMass)
+    public SourdoughRecipe(double starterMass, double starterHydration, double finalHydration, double finalMass)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(starterMass, 0, nameof(starterMass));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(starterHydration, 0, nameof(starterHydration));
@@ -30,11 +29,11 @@ public record SourdoughRecipe
     public IEnumerable<Ingredient> ComputeIngredients()
     {
         // Calculate intermediate values
-        var starterDry = StarterMass / (StarterHydration + 1.0m);
-        var starterWet = StarterHydration * StarterMass / (StarterHydration + 1.0m);
+        var starterDry = StarterMass / (StarterHydration + 1);
+        var starterWet = StarterHydration * StarterMass / (StarterHydration + 1);
 
         // Calculate flour needed
-        var flour = (FinalMass - starterDry - (FinalHydration * starterDry)) / (FinalHydration + 1.0m);
+        var flour = (FinalMass - starterDry - (FinalHydration * starterDry)) / (FinalHydration + 1);
 
         return
         [
@@ -44,8 +43,15 @@ public record SourdoughRecipe
         ];
     }
 
-    private string GetDebuggerDisplay()
+    public override string ToString()
     {
-        return ToString();
+        StringBuilder stringBuilder = new();
+
+        stringBuilder.Append($"{nameof(StarterMass)}: {StarterMass} | ");
+        stringBuilder.Append($"{nameof(StarterHydration)}: {StarterHydration} | ");
+        stringBuilder.Append($"{nameof(FinalHydration)}: {FinalHydration} | ");
+        stringBuilder.Append($"{nameof(FinalMass)}: {FinalMass}");
+
+        return stringBuilder.ToString();
     }
 }

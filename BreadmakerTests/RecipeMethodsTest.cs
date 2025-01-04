@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Reflection;
 using Breadmaker;
 
 namespace BreadmakerTests;
@@ -8,19 +10,37 @@ public class RecipeMethodsTest
     public void TestBasicRecipe()
     {
         // create a basic sourdough recipe from output parameters for the final dough
-        var recipe = new SourdoughRecipe(starterMass: 289, starterHydration: 1, finalHydration: 0.68m, finalMass: 1000);
+        var recipe = new SourdoughRecipe(starterMass: 289, starterHydration: 1, finalHydration: 0.68, finalMass: 1000);
 
         // the calculator should output a list similar to this expected test object
         var expectedIngredients = new List<Ingredient>
         {
             new("Starter", 289),
-            new("Water", 260.261905m),
-            new("Flour", 450.738095m)
+            new("Water", 260.261905),
+            new("Flour", 450.738095)
         };
 
-        var actual = recipe.ComputeIngredients();
+        var actualIngredients = recipe.ComputeIngredients();
 
-        AssertSimilarIngredientLists(expectedIngredients, actual, precision: 6);
+        AssertSimilarIngredientLists(expectedIngredients, actualIngredients, precision: 6);
+    }
+
+    [Fact]
+    public void GetDebuggerDisplay_ReturnsCorrectString()
+    {
+        // Arrange
+        var expectedDebug = "StarterMass: 100 | StarterHydration: 0.5 | FinalHydration: 0.68 | FinalMass: 500";
+        var starterMass = 100;
+        var starterHydration = 0.5;
+        var finalHydration = 0.68;
+        var finalMass = 500;
+
+        // Act
+        var sourdoughRecipe = new SourdoughRecipe(starterMass, starterHydration, finalHydration, finalMass);
+        var actualDebug = sourdoughRecipe.ToString();
+
+        // Assert
+        Assert.Equal(expectedDebug, actualDebug);
     }
 
     [Theory]
@@ -33,7 +53,7 @@ public class RecipeMethodsTest
         // Act and Assert
         Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
-            new SourdoughRecipe((decimal)starterMass, (decimal)starterHydration, (decimal)finalHydration, (decimal)finalMass);
+            new SourdoughRecipe(starterMass, starterHydration, finalHydration, finalMass);
         });
     }
 

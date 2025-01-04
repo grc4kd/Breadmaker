@@ -1,3 +1,3 @@
 namespace Breadmaker;
 
-public record Ingredient(string Name, decimal Mass);
+public record Ingredient(string Name, double Mass);
