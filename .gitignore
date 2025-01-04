@@ -1,0 +1,3 @@
+# exclude obj and bin files in child directories where each project workspace is expected
+**/obj/
+**/bin/
