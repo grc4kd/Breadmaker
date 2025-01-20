@@ -26,6 +26,8 @@ app.UseCors(MyAllowSpecificOrigins);
 
 app.UseHttpsRedirection();
 
+app.MapGet("/", () => "Hello, world!");
+
 app.MapGet("/ingredients", () =>
 {
     var ingredients = new Dictionary<string, string>
@@ -38,3 +40,5 @@ app.MapGet("/ingredients", () =>
 .WithOpenApi();
 
 app.Run();
+
+public partial class Program { }

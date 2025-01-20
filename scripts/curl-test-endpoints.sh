@@ -1,5 +1,5 @@
 #!/bin/bash
-BASE_URL="http://localhost:3000"
+BASE_URL="http://localhost:5007"
 echo "Testing with BASE_URL: $BASE_URL"
 
 printf "\nTest 1\n---===---\n"
