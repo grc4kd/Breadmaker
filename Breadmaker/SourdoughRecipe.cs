@@ -11,15 +11,13 @@ public record SourdoughRecipe
 
     public SourdoughRecipe(double starterMass, double starterHydration, double finalHydration, double finalMass)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(starterMass, 0, nameof(starterMass));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(starterHydration, 0, nameof(starterHydration));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(finalHydration, 0, nameof(finalHydration));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(finalMass, 0, nameof(finalMass));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(starterMass);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(starterHydration);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(finalHydration);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(finalMass);
 
-        StarterMass = starterMass;
-        StarterHydration = starterHydration;
-        FinalHydration = finalHydration;
-        FinalMass = finalMass;
+        (StarterMass, StarterHydration, FinalHydration, FinalMass) =
+            (starterMass, starterHydration, finalHydration, finalMass);
     }
 
     /// <summary>
@@ -28,30 +26,44 @@ public record SourdoughRecipe
     /// <returns>A collection of bread ingredients: starter, water, and flour.</returns>
     public IEnumerable<Ingredient> ComputeIngredients()
     {
-        // Calculate intermediate values
-        var starterDry = StarterMass / (StarterHydration + 1);
-        var starterWet = StarterHydration * StarterMass / (StarterHydration + 1);
+        // Using more descriptive variable names and simplified calculations
+        var starterRatio = 1 + StarterHydration;
+        var starterDry = StarterMass / starterRatio;
+        var starterWet = StarterHydration * starterDry;
 
-        // Calculate flour needed
-        var flour = (FinalMass - starterDry - (FinalHydration * starterDry)) / (FinalHydration + 1);
+        var flour = (FinalMass - starterDry * (1 + FinalHydration)) / (1 + FinalHydration);
 
         return
         [
-            new("Starter", StarterMass),
-            new("Water", FinalMass - starterDry - starterWet - flour),
-            new("Flour", flour)
+            new(1, "Starter", StarterMass),
+            new(2, "Water", FinalMass - starterDry - starterWet - flour),
+            new(3, "Flour", flour)
         ];
     }
 
-    public override string ToString()
+    public static (double hydration, IEnumerable<Ingredient> ingredients) DoughComponents(double starterHydration, double desiredHydration, double desiredMass, double starterRatio)
     {
-        StringBuilder stringBuilder = new();
+        var starter = desiredMass * starterRatio;
+        var recipe = new SourdoughRecipe(starter, starterHydration, desiredHydration, desiredMass);
+        var ingredients = recipe.ComputeIngredients();
+        var water = ingredients.Single(i => i.Name == "Water").Mass;
+        var flour = ingredients.Single(i => i.Name == "Flour").Mass;
 
-        stringBuilder.Append($"{nameof(StarterMass)}: {StarterMass} | ");
-        stringBuilder.Append($"{nameof(StarterHydration)}: {StarterHydration} | ");
-        stringBuilder.Append($"{nameof(FinalHydration)}: {FinalHydration} | ");
-        stringBuilder.Append($"{nameof(FinalMass)}: {FinalMass}");
-
-        return stringBuilder.ToString();
+        return new
+        (
+            Hydration(starter, starterHydration, water, flour),
+            ingredients
+        );
     }
+
+    public static double Hydration(double starter, double starterHydration, double water, double flour)
+    {
+        var starterRatio = starterHydration + 1.0;
+        var wet = water + (starter * starterHydration / starterRatio);
+        var dry = flour + (starter / starterRatio);
+        return wet / dry;
+    }
+
+    public override string ToString() => $"{nameof(StarterMass)}: {StarterMass} | {nameof(StarterHydration)}: {StarterHydration}"
+        + $" | {nameof(FinalHydration)}: {FinalHydration} | {nameof(FinalMass)}: {FinalMass}";
 }

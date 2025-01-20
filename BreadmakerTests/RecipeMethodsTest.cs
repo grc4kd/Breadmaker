@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Reflection;
 using Breadmaker;
 
 namespace BreadmakerTests;
@@ -15,9 +13,9 @@ public class RecipeMethodsTest
         // the calculator should output a list similar to this expected test object
         var expectedIngredients = new List<Ingredient>
         {
-            new("Starter", 289),
-            new("Water", 260.261905),
-            new("Flour", 450.738095)
+            new(1, "Starter", 289),
+            new(2, "Water", 260.261905),
+            new(3, "Flour", 450.738095)
         };
 
         var actualIngredients = recipe.ComputeIngredients();
@@ -26,7 +24,7 @@ public class RecipeMethodsTest
     }
 
     [Fact]
-    public void GetDebuggerDisplay_ReturnsCorrectString()
+    public void GetDebuggerDisplayReturnsCorrectString()
     {
         // Arrange
         var expectedDebug = "StarterMass: 100 | StarterHydration: 0.5 | FinalHydration: 0.68 | FinalMass: 500";
@@ -48,7 +46,7 @@ public class RecipeMethodsTest
     [InlineData(289, -0.1, 0.68, 1000)]
     [InlineData(289, 0.5, -0.1, 1000)]
     [InlineData(289, 0.5, 0.68, -500)]
-    public void InvalidSourdoughRecipeParam_ThrowsArgumentOutOfRangeException(double starterMass, double starterHydration, double finalHydration, double finalMass)
+    public void InvalidSourdoughRecipeParamThrowsArgumentOutOfRangeException(double starterMass, double starterHydration, double finalHydration, double finalMass)
     {
         // Act and Assert
         Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -61,9 +59,9 @@ public class RecipeMethodsTest
     [InlineData(1)]
     [InlineData(0)]
     [InlineData(-1)]
-    public void SelfTest_AssertSimilarIngredientLists(int precision)
+    public void SelfTestAssertSimilarIngredientLists(int precision)
     {
-        AssertSimilarIngredientLists(expectedIngredients: [], actualIngredients: [], precision);        
+        AssertSimilarIngredientLists(expectedIngredients: [], actualIngredients: [], precision);
     }
 
     /// <summary>
@@ -75,7 +73,17 @@ public class RecipeMethodsTest
                                                                    let actualIngredient = actualIngredients.Single(i => i.Name == expectedIngredient.Name)
                                                                    select (expectedIngredient, actualIngredient))
         {
-            Assert.Equal(Math.Round(expectedIngredient.Mass, precision), Math.Round(actualIngredient.Mass, precision));
+            Assert.Equal(expectedIngredient.Mass, actualIngredient.Mass, precision);
         }
+    }
+
+    [Theory]
+    [InlineData(0.6, 569.444444, 330.555556, 0.8, 1000.0, 0.1)]
+    public void TestDoughComponents(double expectedHydration, double expectedFlour, double expectedWater, double starterHydration, double desiredMass, double starterRatio)
+    {
+        var (hydration, ingredients) = SourdoughRecipe.DoughComponents(starterHydration, expectedHydration, desiredMass, starterRatio);
+
+        Assert.Equal(expectedHydration, hydration, precision: 6);
+        AssertSimilarIngredientLists([new(1, "Flour", expectedFlour), new(2, "Water", expectedWater)], ingredients, precision: 6);
     }
 }

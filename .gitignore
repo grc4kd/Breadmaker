@@ -1,3 +1,9 @@
 # exclude obj and bin files in child directories where each project workspace is expected
 **/obj/
 **/bin/
+
+# exclude BenchmarkDotNet log artifacts, but not the final reports
+BenchmarkDotNet.Artifacts/BreadmakerBenchmarks.*.log
+
+# do not track node modules directory anywhere
+**/node_modules/

@@ -1,3 +1,3 @@
 namespace Breadmaker;
 
-public record Ingredient(string Name, double Mass);
+public record Ingredient(int Id, string Name, double Mass);
